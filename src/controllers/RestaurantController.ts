@@ -1,6 +1,7 @@
 import { Request, Response, response } from "express";
 
 import RestaurantModel from "../models/restaurant";
+import {RequestParams} from "../interfaces/global";
 
 export interface RequestBody {
   name: string;
@@ -54,10 +55,9 @@ export interface RequestBody {
       openingTime: string,
       closingTime: string
     },
-  ]
+  ],
 }
 
-type RequestParams = { restaurantId: string };
 
 class Restaurant {
   async index(req: Request, res: Response) {
@@ -96,6 +96,8 @@ class Restaurant {
       return res.status(404).json({message: "Restaurant not found!"})
     }
 
+    // ARRUMAR A ALTERAÇÃO NA WEEK
+    console.log(...restaurant?.week, ...week)
     restaurant.name = name ? name : restaurant?.name!;
     restaurant.picture = picture ? picture : restaurant?.picture!;
     restaurant.address = address ? address : restaurant?.address!;

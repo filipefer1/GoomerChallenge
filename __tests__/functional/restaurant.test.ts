@@ -80,7 +80,7 @@ describe("Test /restaurant routes", () => {
     expect(restaurant?.name).toBeTruthy();
   });
 
-  it("shoudld return a list of all restaurants", async () => {
+  it("should return a list of all restaurants", async () => {
     const response = await supertest(app).get("/restaurant");
     const body = response.body as RequestBodyGet;
     const status = response.status as RequestStatus;
