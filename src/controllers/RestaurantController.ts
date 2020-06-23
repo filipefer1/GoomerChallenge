@@ -1,7 +1,7 @@
-import { Request, Response, response } from "express";
+import { Request, Response, NextFunction } from "express";
 
 import RestaurantModel from "../models/restaurant";
-import {RequestParams} from "../interfaces/global";
+import { RequestParams } from "../interfaces/global";
 
 export interface RequestBody {
   name: string;
@@ -14,58 +14,69 @@ export interface RequestBody {
   };
   week: [
     {
-      day: string,
-      open: boolean,
-      openingTime: string,
-      closingTime: string
+      day: string;
+      open: boolean;
+      openingTime: string;
+      closingTime: string;
     },
     {
-      day: string,
-      open: boolean,
-      openingTime: string,
-      closingTime: string
+      day: string;
+      open: boolean;
+      openingTime: string;
+      closingTime: string;
     },
     {
-      day: string,
-      open: boolean,
-      openingTime: string,
-      closingTime: string
+      day: string;
+      open: boolean;
+      openingTime: string;
+      closingTime: string;
     },
     {
-      day: string,
-      open: boolean,
-      openingTime: string,
-      closingTime: string
+      day: string;
+      open: boolean;
+      openingTime: string;
+      closingTime: string;
     },
     {
-      day: string,
-      open: boolean,
-      openingTime: string,
-      closingTime: string
+      day: string;
+      open: boolean;
+      openingTime: string;
+      closingTime: string;
     },
     {
-      day: string,
-      open: boolean,
-      openingTime: string,
-      closingTime: string
+      day: string;
+      open: boolean;
+      openingTime: string;
+      closingTime: string;
     },
     {
-      day: string,
-      open: boolean,
-      openingTime: string,
-      closingTime: string
-    },
-  ],
+      day: string;
+      open: boolean;
+      openingTime: string;
+      closingTime: string;
+    }
+  ];
 }
 
-
 class Restaurant {
-  async index(req: Request, res: Response) {
-    const allRestaurants = await RestaurantModel.find();
-    return res.status(200).json(allRestaurants);
+  async index(req: Request, res: Response, next: NextFunction) {
+    try {
+      const allRestaurants = await RestaurantModel.find();
+
+      if (!allRestaurants) {
+        const err = {
+          status: 404,
+          message: "Database could not found all restaurants",
+        };
+        next(err);
+      }
+      return res.status(200).json(allRestaurants);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  async create(req: Request, res: Response) {
+  async create(req: Request, res: Response, next: NextFunction) {
     const { name, picture, address, week } = req.body as RequestBody;
     const restaurant = new RestaurantModel({
       name,
@@ -74,44 +85,104 @@ class Restaurant {
       week,
     });
 
-    const newRestaurant = await restaurant.save();
-    return res.status(201).json(newRestaurant);
+    try {
+      const newRestaurant = await restaurant.save();
+
+      if (!newRestaurant) {
+        const err = {
+          status: 404,
+          message: "Could not create a restaurant.",
+        };
+        next(err);
+      }
+      return res.status(201).json(newRestaurant);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  async show(req: Request, res: Response) {
+  async show(req: Request, res: Response, next: NextFunction) {
     const { restaurantId } = req.params as RequestParams;
 
-    const restaurant = await RestaurantModel.findById(restaurantId);
+    try {
+      const restaurant = await RestaurantModel.findById(restaurantId);
 
-    return res.status(200).json(restaurant);
+      if (!restaurant) {
+        const err = {
+          message: "Could not found restaurant with the passed id",
+          status: 404,
+        };
+        next(err);
+      }
+      return res.status(200).json(restaurant);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  async update(req: Request, res: Response){
-    const {name, picture, address, week } = req.body as RequestBody;
-    const {restaurantId} = req.params as RequestParams;
+  async update(req: Request, res: Response, next: NextFunction) {
+    const { name, picture, address, week } = req.body as RequestBody;
+    const { restaurantId } = req.params as RequestParams;
 
     const restaurant = await RestaurantModel.findById(restaurantId);
 
     if (!restaurant) {
-      return res.status(404).json({message: "Restaurant not found!"})
+      const err = {
+        message: "Restaurant not found!",
+        status: 404,
+      };
+      return next(err);
     }
 
-    // ARRUMAR A ALTERAÇÃO NA WEEK
-    console.log(...restaurant?.week, ...week)
-    restaurant.name = name ? name : restaurant?.name!;
-    restaurant.picture = picture ? picture : restaurant?.picture!;
-    restaurant.address = address ? address : restaurant?.address!;
-    restaurant.week = week ? week : restaurant?.week!;
+    week.forEach((updatedDay) => {
+      restaurant.week.forEach((day, index) => {
+        if (updatedDay.day === day.day) {
+          restaurant.week[index] = updatedDay;
+        }
+      });
+    });
 
-    const updatedRestaurant = await restaurant.save();
-    return res.status(200).json(updatedRestaurant)
-  };
+    restaurant.name = name ? name : restaurant.name;
+    restaurant.picture = picture ? picture : restaurant.picture;
+    restaurant.address = address ? address : restaurant.address;
 
-  async destroy(req: Request, res: Response) {
+    try {
+      const updatedRestaurant = await restaurant.save();
+
+      if (!updatedRestaurant) {
+        const err = {
+          message: "restaurant has not been updated",
+          status: 404,
+        };
+        return next(err);
+      }
+      return res.status(200).json(updatedRestaurant);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async destroy(req: Request, res: Response, next: NextFunction) {
     const { restaurantId } = req.params as RequestParams;
-    await RestaurantModel.findByIdAndDelete(restaurantId);
+    try {
+      const restaurantDeleted = await RestaurantModel.findByIdAndDelete(
+        restaurantId
+      );
 
-    return res.status(200).json({message: "Restaurant deleted"});
+      if (!restaurantDeleted) {
+        const err = {
+          message: "restaurant has not been deleted",
+          status: 404,
+        };
+        next(err);
+      }
+
+      return res
+        .status(200)
+        .json({ message: "Restaurant deleted", restaurant: restaurantDeleted });
+    } catch (err) {
+      next(err)
+    }
   }
 }
 

@@ -1,5 +1,10 @@
-import { ErrorRequestHandler, Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { isCelebrate, CelebrateInternalError } from "celebrate";
+
+export interface InternalError extends Error {
+  status: number;
+  message: string;
+}
 
 export const celebrateErrorHandling = (
   err: CelebrateInternalError,
@@ -10,5 +15,17 @@ export const celebrateErrorHandling = (
   if (isCelebrate(err)) {
     return res.status(400).json({ message: err.joi.message });
   }
-  return next(err)
+  return next(err);
+};
+
+export const internalErrorHandler = (
+  err: InternalError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log(err)
+  const status = err.status || 500;
+  const message = err.message || "Internal server error";
+  res.status(status).json({message});
 };
