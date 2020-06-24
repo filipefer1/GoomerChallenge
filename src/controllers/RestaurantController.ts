@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 
 import RestaurantModel from "../models/restaurant";
+import ProductModel from "../models/product";
 import { RequestParams } from "../interfaces/global";
 
 export interface RequestBody {
@@ -16,44 +17,44 @@ export interface RequestBody {
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     }
   ];
 }
@@ -78,6 +79,21 @@ class Restaurant {
 
   async create(req: Request, res: Response, next: NextFunction) {
     const { name, picture, address, week } = req.body as RequestBody;
+
+    week.forEach((day, index) => {
+      if (!day.open) {
+        week[index] = { day: day.day, open: day.open };
+      } else {
+        if (!day.openingTime || !day.closingTime) {
+          const err = {
+            message: "Miss fields",
+            status: 400,
+          };
+          return next(err);
+        }
+      }
+    });
+
     const restaurant = new RestaurantModel({
       name,
       picture,
@@ -90,7 +106,7 @@ class Restaurant {
 
       if (!newRestaurant) {
         const err = {
-          status: 404,
+          status: 400,
           message: "Could not create a restaurant.",
         };
         next(err);
@@ -135,8 +151,22 @@ class Restaurant {
     }
 
     week.forEach((updatedDay) => {
+      if (!updatedDay.open) {
+        updatedDay = { day: updatedDay.day, open: updatedDay.open };
+      }
       restaurant.week.forEach((day, index) => {
         if (updatedDay.day === day.day) {
+          if (
+            updatedDay.open &&
+            (!updatedDay.openingTime ||
+            !updatedDay.closingTime)
+          ) {
+            const err = {
+              message: "Miss fields",
+              status: 400,
+            };
+            return next(err);
+          }
           restaurant.week[index] = updatedDay;
         }
       });
@@ -144,7 +174,9 @@ class Restaurant {
 
     restaurant.name = name ? name : restaurant.name;
     restaurant.picture = picture ? picture : restaurant.picture;
-    restaurant.address = address ? address : restaurant.address;
+    restaurant.address = address
+      ? { ...restaurant.address, ...address }
+      : restaurant.address;
 
     try {
       const updatedRestaurant = await restaurant.save();
@@ -165,6 +197,12 @@ class Restaurant {
   async destroy(req: Request, res: Response, next: NextFunction) {
     const { restaurantId } = req.params as RequestParams;
     try {
+      await ProductModel.find({
+        restaurantId: restaurantId,
+      })
+        .remove()
+        .exec();
+
       const restaurantDeleted = await RestaurantModel.findByIdAndDelete(
         restaurantId
       );
@@ -181,7 +219,7 @@ class Restaurant {
         .status(200)
         .json({ message: "Restaurant deleted", restaurant: restaurantDeleted });
     } catch (err) {
-      next(err)
+      next(err);
     }
   }
 }

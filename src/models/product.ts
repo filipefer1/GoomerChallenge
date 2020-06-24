@@ -94,45 +94,45 @@ interface Product extends Document {
     days: [
       {
         day: string;
-        isItInPromotion: boolean;
-        startPromotion: string;
-        endPromotion: string;
+        isItInPromotion?: boolean;
+        startPromotion?: string;
+        endPromotion?: string;
       },
       {
         day: string;
-        isItInPromotion: boolean;
-        startPromotion: string;
-        endPromotion: string;
+        isItInPromotion?: boolean;
+        startPromotion?: string;
+        endPromotion?: string;
       },
       {
         day: string;
-        isItInPromotion: boolean;
-        startPromotion: string;
-        endPromotion: string;
+        isItInPromotion?: boolean;
+        startPromotion?: string;
+        endPromotion?: string;
       },
       {
         day: string;
-        isItInPromotion: boolean;
-        startPromotion: string;
-        endPromotion: string;
+        isItInPromotion?: boolean;
+        startPromotion?: string;
+        endPromotion?: string;
       },
       {
         day: string;
-        isItInPromotion: boolean;
-        startPromotion: string;
-        endPromotion: string;
+        isItInPromotion?: boolean;
+        startPromotion?: string;
+        endPromotion?: string;
       },
       {
         day: string;
-        isItInPromotion: boolean;
-        startPromotion: string;
-        endPromotion: string;
+        isItInPromotion?: boolean;
+        startPromotion?: string;
+        endPromotion?: string;
       },
       {
         day: string;
-        isItInPromotion: boolean;
-        startPromotion: string;
-        endPromotion: string;
+        isItInPromotion?: boolean;
+        startPromotion?: string;
+        endPromotion?: string;
       }
     ];
   };

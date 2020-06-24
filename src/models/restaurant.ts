@@ -92,44 +92,44 @@ interface Restaurant extends Document {
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     },
     {
       day: string;
       open: boolean;
-      openingTime: string;
-      closingTime: string;
+      openingTime?: string;
+      closingTime?: string;
     }
   ];
 }
