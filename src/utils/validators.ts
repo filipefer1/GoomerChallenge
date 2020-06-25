@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 const stringValidator = Joi.string().required().trim();
 const stringValidatorUpdate = Joi.string().trim();
 
-const validateObjectId = (value: string) => {
+export const validateObjectId = (value: string) => {
   const id = new Types.ObjectId(value);
   if (id instanceof Types.ObjectId) {
     return value;
@@ -13,7 +13,7 @@ const validateObjectId = (value: string) => {
   }
 };
 
-const validateTime = (value: string) => {
+export const validateTime = (value: string) => {
   const hourSplit = value.split(":");
   const minutes = hourSplit[1];
   const error = new Error("Hour format is invalid!");

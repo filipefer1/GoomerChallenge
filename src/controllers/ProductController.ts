@@ -4,7 +4,8 @@ import ProductModel from "../models/product";
 import RestaurantModel from "../models/restaurant";
 import { RequestParams } from "../interfaces/global";
 
-interface RequestBody {
+export interface RequestBody {
+  _id: string;
   name: string;
   picture: string;
   price: number;
@@ -71,9 +72,11 @@ class Product {
     const { restaurantId } = req.params as RequestParams;
 
     try {
+      let err: boolean = false;
       const restaurantWeek = await RestaurantModel.findById(
         restaurantId
       ).select("week");
+
       restaurantWeek?.week.forEach((weekDay) => {
         promotion.days.forEach((promotionDay) => {
           if (
@@ -81,15 +84,19 @@ class Product {
             !weekDay.open &&
             promotionDay.isItInPromotion
           ) {
-            const err = {
-              message: `Could not create a promotion, check if the restaurant is open on the day (${promotionDay.day}) of the promotion`,
-              status: 400,
-            };
-            return next(err);
+            err = true;
           }
         });
       });
 
+      if (err) {
+        return res
+          .status(400)
+          .json({
+            message: `Could not create a promotion, check if the restaurant is open on the day of the promotion`,
+          });
+      }
+      
       promotion.days.forEach((promotionDay, index) => {
         if (!promotionDay.isItInPromotion) {
           promotion.days[index] = {
@@ -110,13 +117,13 @@ class Product {
 
       const newProduct = await product.save();
 
-      if (!newProduct) {
-        const err = {
-          message: "Could not create a product",
-          status: 400,
-        };
-        return next(err);
-      }
+      // if (!newProduct) {
+      //   const err = {
+      //     message: "Could not create a product",
+      //     status: 400,
+      //   };
+      //   return next(err);
+      // }
       return res.status(201).json(newProduct);
     } catch (err) {
       next(err);

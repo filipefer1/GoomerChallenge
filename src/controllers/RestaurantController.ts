@@ -86,7 +86,7 @@ class Restaurant {
       } else {
         if (!day.openingTime || !day.closingTime) {
           const err = {
-            message: "Miss fields",
+            message: "Missing fields",
             status: 400,
           };
           return next(err);

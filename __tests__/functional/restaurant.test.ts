@@ -5,62 +5,16 @@ import app from "../../src/app";
 import Restaurant from "../../src/models/restaurant";
 
 import { RequestBody } from "../../src/controllers/RestaurantController";
+import { dummy, dummyRestaurantInvalid } from "../data/dummy";
 
 type RequestBodyGet = RequestBody[];
+type RequestBodyError = {
+  message: string
+}
 type RequestStatus = number;
-
-const dummy = {
-  name: "test2",
-  picture: "imagePicture",
-  address: {
-    street: "Rua1",
-    city: "Valparaíso",
-    zipCode: "1234-789",
-    state: "GO",
-  },
-  week: [
-    {
-      day: "monday",
-      open: false,
-    },
-    {
-      day: "tuesday",
-      open: true,
-      openingTime: "09",
-      closingTime: "22",
-    },
-    {
-      day: "wednesday",
-      open: true,
-      openingTime: "09",
-      closingTime: "22",
-    },
-    {
-      day: "thursday",
-      open: true,
-      openingTime: "09",
-      closingTime: "22",
-    },
-    {
-      day: "friday",
-      open: true,
-      openingTime: "09",
-      closingTime: "22",
-    },
-    {
-      day: "saturday",
-      open: true,
-      openingTime: "16",
-      closingTime: "00",
-    },
-    {
-      day: "sunday",
-      open: true,
-      openingTime: "09",
-      closingTime: "23",
-    },
-  ],
-};
+interface UpdatedRequestBody extends RequestBody {
+  _id: string;
+}
 
 describe("Test /restaurant routes", () => {
   let id: string;
@@ -80,6 +34,18 @@ describe("Test /restaurant routes", () => {
     expect(restaurant?.name).toBeTruthy();
   });
 
+  it("should not create a restaurant because the week object is missing fields", async () => {
+    const response = await supertest(app)
+      .post("/restaurant")
+      .send(dummyRestaurantInvalid);
+
+    const body = response.body as RequestBodyError;
+    const status = response.status as RequestStatus;
+
+    expect(status).toEqual(400);
+    expect(body.message).toMatch(/Missing fields/)
+  });
+
   it("should return a list of all restaurants", async () => {
     const response = await supertest(app).get("/restaurant");
     const body = response.body as RequestBodyGet;
@@ -89,38 +55,47 @@ describe("Test /restaurant routes", () => {
   });
 
   it("should return just a restaurant", async () => {
-    const response = await supertest(app).get(
-      `/restaurant/${id}`
-    );
+    const response = await supertest(app).get(`/restaurant/${id}`);
     const status = response.status as RequestStatus;
     const restaurant = JSON.parse(response.text) as RequestBody;
-    
-    restaurant.week.forEach(day => {
+
+    restaurant.week.forEach((day) => {
       if (!day.open) {
-        expect(day).not.toHaveProperty(["openingTime"])
-        expect(day).not.toHaveProperty(["closingTime"])
+        expect(day).not.toHaveProperty(["openingTime"]);
+        expect(day).not.toHaveProperty(["closingTime"]);
       }
-    })
+    });
     expect(restaurant).toHaveProperty("name");
     expect(status).toEqual(200);
   });
 
   it("should update a restaurant", async () => {
-    const response = await supertest(app).put(
-      `/restaurant/${id}`
-    );
+    const response = await supertest(app)
+      .put(`/restaurant/${id}`)
+      .send({
+        name: "Restaurant2",
+        week: [
+          {
+            day: "monday",
+            open: true,
+            openingTime: "09:00",
+            closingTime: "22:15",
+          },
+        ],
+      });
+    const body = response.body as UpdatedRequestBody;
     const status = response.status as RequestStatus;
     expect(status).toEqual(200);
-  })
+    expect(body).toBeDefined();
+    expect(body.week).not.toBeUndefined();
+  });
 
   it("should delete a restaurant", async () => {
-    const response = await supertest(app).delete(
-      `/restaurant/5eecd857165970752dfd0ba4`
-    );
+    const response = await supertest(app).delete(`/restaurant/${id}`);
     const status = response.status as RequestStatus;
 
     expect(status).toEqual(200);
-  })
+  });
 
   afterAll(async () => {
     await connection.close();
