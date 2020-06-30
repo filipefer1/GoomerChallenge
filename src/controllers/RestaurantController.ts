@@ -78,6 +78,10 @@ class Restaurant {
   }
 
   async create(req: Request, res: Response, next: NextFunction) {
+    // const image = req.file.filename;
+    type error = {message?: string, status?: number};
+
+    let err: error = {};
     const { name, picture, address, week } = req.body as RequestBody;
 
     week.forEach((day, index) => {
@@ -85,14 +89,17 @@ class Restaurant {
         week[index] = { day: day.day, open: day.open };
       } else {
         if (!day.openingTime || !day.closingTime) {
-          const err = {
+          err = {
             message: "Missing fields",
             status: 400,
           };
-          return next(err);
         }
       }
     });
+
+    if(err.status) {
+      return next(err);
+    }
 
     const restaurant = new RestaurantModel({
       name,
@@ -158,8 +165,7 @@ class Restaurant {
         if (updatedDay.day === day.day) {
           if (
             updatedDay.open &&
-            (!updatedDay.openingTime ||
-            !updatedDay.closingTime)
+            (!updatedDay.openingTime || !updatedDay.closingTime)
           ) {
             const err = {
               message: "Miss fields",

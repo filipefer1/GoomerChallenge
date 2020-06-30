@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 
 import restaurantRoutes from "./routes/restaurantRoutes";
 import productRoutes from "./routes/productRoutes";
@@ -9,6 +10,7 @@ import {
 
 const app = express();
 
+app.use("/uploads", express.static(path.resolve(__dirname, "..", "uploads")));
 app.use(express.json());
 app.use(restaurantRoutes);
 app.use(productRoutes);

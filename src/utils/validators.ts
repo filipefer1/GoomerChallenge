@@ -51,7 +51,7 @@ export const restaurantBody = celebrate({
       open: Joi.boolean().required(),
       openingTime: timeValidator,
       closingTime: timeValidator,
-    }),
+    }).length(7),
   }),
 });
 

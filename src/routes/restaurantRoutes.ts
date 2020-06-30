@@ -1,4 +1,6 @@
 import { Router } from "express";
+import multer from "multer";
+import multerConfig from "../config/multer";
 import RestaurantController from "../controllers/RestaurantController";
 import {
   restaurantBody,
@@ -9,13 +11,20 @@ import {
 const router = Router();
 const restaurantController = new RestaurantController();
 
+const upload = multer(multerConfig);
+
 router.get("/restaurant", restaurantController.index);
 router.get(
   "/restaurant/:restaurantId",
   restaurantParams,
   restaurantController.show
 );
-router.post("/restaurant", restaurantBody, restaurantController.create);
+router.post(
+  "/restaurant",
+  upload.single("image"),
+  restaurantBody,
+  restaurantController.create
+);
 router.put(
   "/restaurant/:restaurantId",
   restaurantBodyUpdate,
